@@ -214,23 +214,16 @@ streznik.post('/prijava', function(zahteva, odgovor) {
     } catch (err) {
       napaka2 = true;
     }
-    if (napaka2 || napaka1){
+  
        vrniRacune(function(napaka2, racuni) {
          vrniStranke(function(napaka1, stranke)  {
+           if (napaka2 || napaka1){
               odgovor.render("prijava", {seznamStrank: stranke, seznamRacunov: racuni, sporocilo:"Prišlo je do napake pri registraciji nove stranke. Prosim preverite vnešene podatke in poskusite znova."}) ;
-                  }) ;
+        }  else {
+            odgovor.render('prijava', {sporocilo: 'Stranka je bila uspešno registrirana.', seznamStrank: stranke, seznamRacunov: racuni}); 
+        }
+      });
     });
-  } else {
-     vrniRacune(function(napaka2, racuni) { 
-       vrniStranke(function(napaka1, stranke) { 
-          odgovor.render('prijava', {sporocilo: 'Stranka je bila uspešno registrirana.', seznamStrank: stranke, seznamRacunov: racuni}); 
-       }); 
-     }); 
-         
-         
-  }
-  
-
   });
 });
 
