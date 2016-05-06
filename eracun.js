@@ -45,12 +45,12 @@ function davcnaStopnja(izvajalec, zanr) {
   }
 }
 
-var seja;
+
 
 // Prikaz seznama pesmi na strani
 streznik.get('/', function(zahteva, odgovor) {
   
-  if(!seja){
+ if(!zahteva.session.userId){ 
     odgovor.redirect('/prijava'); 
     
     
@@ -240,16 +240,20 @@ streznik.get('/prijava', function(zahteva, odgovor) {
 // Prikaz nakupovalne košarice za stranko
 streznik.post('/stranka', function(zahteva, odgovor) {
   var form = new formidable.IncomingForm();
-  seja = '<%=Session["currentSession"]%>';
+  
   
   form.parse(zahteva, function (napaka1, polja, datoteke) {
-    odgovor.redirect('/')
+     if(!zahteva.session.userId){ 
+        zahteva.session.userId = polja.seznamStrank; 
+        console.log(polja); 
+     } 
+        odgovor.redirect('/')
   });
 })
 
 // Odjava stranke
 streznik.post('/odjava', function(zahteva, odgovor) {
-   seja = null;
+     zahteva.session.destroy(); 
     odgovor.redirect('/prijava') 
 })
 
