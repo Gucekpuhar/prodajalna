@@ -133,8 +133,13 @@ var pesmiIzRacuna = function(racunId, callback) {
     Track.TrackId IN (SELECT InvoiceLine.TrackId FROM InvoiceLine, Invoice \
     WHERE InvoiceLine.InvoiceId = Invoice.InvoiceId AND Invoice.InvoiceId = " + racunId + ")",
     function(napaka, vrstice) {
-      callback(napaka, vrstice);
-    })
+     
+        callback(vrstice); 
+        
+     
+        
+        
+      })
 }
 
 // Vrni podrobnosti o stranki iz računa
@@ -142,25 +147,34 @@ var strankaIzRacuna = function(racunId, callback) {
     pb.all("SELECT Customer.* FROM Customer, Invoice \
             WHERE Customer.CustomerId = Invoice.CustomerId AND Invoice.InvoiceId = " + racunId,
     function(napaka, vrstice) {
-     callback(napaka, vrstice);
+     
+        callback(vrstice); 
     })
 }
 
 // Izpis računa v HTML predstavitvi na podlagi podatkov iz baze
-streznik.get('/izpisiRacunBaza/:idRacuna', function(zahteva, odgovor) { 
-  var TrenutnaStranka = zahteva.query.seznamRacunov; 
-  var TrenutniRacun = TrenutnaStranka;
+streznik.post('/izpisiRacunBaza', function(zahteva, odgovor) { 
   
-  strankaIzRacuna(TrenutnaStranka, function(napaka1, stranka) { 
-    pesmiIzRacuna(TrenutniRacun, function(napaka2, pesmi) { 
-      odgovor.setHeader('content-type', 'text/xml'); 
-      odgovor.render('eslog', { 
-        vizualiziraj: true, 
-        postavkeRacuna: pesmi 
+  var form = new formidable.IncomingForm(); 
+    form.parse(zahteva, function(napaka, polja, datoteke){ 
+     
   
-         });
+      strankaIzRacuna(polja.seznamRacunov, function(stranke){ 
+        pesmiIzRacuna(polja.seznamRacunov, function(pesmi){ 
+           for (var i=0; i<pesmi.length; i++) { 
+              pesmi[i].stopnja = davcnaStopnja((pesmi[i].opisArtikla.split(' (')[1]).split(')')[0], pesmi[i].zanr); 
+           } 
+           
+           
+          odgovor.setHeader('content-type', 'text/xml'); 
+          odgovor.render('eslog', { 
+            vizualiziraj: true, 
+            postavkeRacuna: pesmi, 
+            stranka: stranke[0]
+  
+         })
     
-      
+        }) ;
     });
   });
 })
